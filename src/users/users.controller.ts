@@ -39,12 +39,22 @@ export class UsersController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+  async update(
+    @Param('id', ValidationPipe) id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    const isValid = mongoose.Types.ObjectId.isValid(id);
+    if (!isValid) throw new HttpException('User not found', 404);
+    const updatedUser = await this.usersService.update(id, updateUserDto);
+    if (!updatedUser) throw new HttpException('User not found', 404);
+    return updatedUser;
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  async remove(@Param('id') id: string) {
+    const isValid = mongoose.Types.ObjectId.isValid(id);
+    if (!isValid) throw new HttpException('User not found', 404);
+    const deletedUser = await this.usersService.remove(id);
+    return deletedUser;
   }
 }
